@@ -194,7 +194,10 @@ export async function createJavaProject(context: vscode.ExtensionContext) {
     const mainJavaContent = 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, ITSC2214!");\n    }\n}';
     await vscode.workspace.fs.writeFile(vscode.Uri.joinPath(srcUri, 'Main.java'), Buffer.from(mainJavaContent, 'utf8'));
 
-    const settings = { 'java.project.referencedLibraries': [ 'lib/**/*.jar' ] };
+    const settings = { 
+        'java.project.referencedLibraries': [ 'lib/**/*.jar' ],
+        'java.project.outputPath': 'bin'
+    };
     const settingsUri = vscode.Uri.joinPath(projectUri, '.vscode', 'settings.json');
     await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(projectUri, '.vscode'));
     await vscode.workspace.fs.writeFile(settingsUri, Buffer.from(JSON.stringify(settings, null, 4), 'utf8'));

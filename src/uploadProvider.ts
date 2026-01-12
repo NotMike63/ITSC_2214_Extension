@@ -132,6 +132,17 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
     const { assignment: _assignment, group: _group, provider } = <AssignmentItem>item.item;
   
     const action = async () => {
+      // Save all unsaved files before submission
+      const saved = await workspace.saveAll();
+      if (!saved) {
+        const proceed = await window.showWarningMessage(
+          'Some files could not be saved. Continue with submission?',
+          'Yes', 'No'
+        );
+        if (proceed !== 'Yes') {
+          return window.showInformationMessage('Submission canceled.');
+        }
+      }
       
   
       const groups = await provider.fetchData();
@@ -149,21 +160,47 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
       };
   
       const files: { param: TransportParam; dir: string }[] = [];
-      const itsc2214Dir = context.globalState.get<string>('itsc2214Dir');
-      const defaultUri = itsc2214Dir ? vscode.Uri.file(itsc2214Dir) : workspace.workspaceFolders?.[0]?.uri;
-  
+      const workspaceRoot = workspace.workspaceFolders?.[0]?.uri;
+
       for (const param of assignment.transport.fileParams) {
-        const dirResult = await window.showOpenDialog({
-          title: "Select Submission Folder",
-          canSelectFiles: false,
-          canSelectFolders: true,
-          canSelectMany: false,
-          defaultUri: defaultUri,
-          openLabel: `Select Folder (${param.name})`,
-        });
-  
-        if (!dirResult) return window.showInformationMessage("Operation canceled.");
-        files.push({ param, dir: dirResult[0].fsPath });
+        let submissionUri: vscode.Uri | undefined;
+        if (workspaceRoot) {
+            const submitUri = vscode.Uri.joinPath(workspaceRoot, 'submit');
+            const srcUri = vscode.Uri.joinPath(workspaceRoot, 'src');
+
+            try {
+                await workspace.fs.stat(submitUri);
+                submissionUri = submitUri;
+            } catch {
+                try {
+                    await workspace.fs.stat(srcUri);
+                    submissionUri = srcUri;
+                } catch {
+                    // Neither folder exists
+                }
+            }
+        }
+
+        if (!submissionUri) {
+            const dirResult = await window.showOpenDialog({
+                title: "Select Submission Folder",
+                canSelectFiles: false,
+                canSelectFolders: true,
+                canSelectMany: false,
+                defaultUri: workspaceRoot,
+                openLabel: `Select Folder (${param.name})`,
+            });
+    
+            if (dirResult) {
+                submissionUri = dirResult[0];
+            }
+        }
+
+        if (!submissionUri) {
+            return window.showInformationMessage("Operation canceled.");
+        }
+
+        files.push({ param, dir: submissionUri.fsPath });
       }
   
       
@@ -235,8 +272,7 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
       
       if (resultsUrl) {
         const choice = await window.showInformationMessage(
-            "WebCAT submission successful. You can view the results in your browser.",
-            { modal: true },
+            "WebCAT submission successful.",
             "Open"
         );
 

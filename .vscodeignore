@@ -11,3 +11,5 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 # Don't ignore the JARS directory
 !JARS/
+Readme.md
+Changelog.md

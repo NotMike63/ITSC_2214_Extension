@@ -1,5 +1,5 @@
 import { commands, ExtensionContext, window, workspace } from 'vscode';
-import { createJavaProject, reinstallJars, setupDirectory, openDirectory } from './createProject';
+import { createJavaProject, reinstallJars, setupDirectory, openDirectory } from './projectCreator';
 import { AssignmentProvider, downloadAssignment, setDownloadUrl, openView, setUploadUrl } from './assignmentProvider';
 import { UploadDataProvider, uploadItem } from './uploadProvider';
 

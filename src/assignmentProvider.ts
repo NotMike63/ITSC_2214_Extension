@@ -4,13 +4,14 @@ import fetch from 'node-fetch';
 import * as path from 'path';
 import * as os from 'os';
 import * as unzip from 'unzip-stream';
-import { parseStringPromise } from 'xml2js';
-import { copyJarsToDir } from './createProject';
+import { XMLParser } from 'fast-xml-parser';
+import { copyJarsToDir } from './projectCreator';
 
 type AssignmentItemData = {
     label: string;
     description: string;
     url: string;
+    category: string;
 };
 
 class AssignmentTreeItem extends vscode.TreeItem {
@@ -66,12 +67,18 @@ export class AssignmentProvider implements vscode.TreeDataProvider<AssignmentTre
 
         const content = await resp.text();
         try {
-            const result = await parseStringPromise(content);
-            const siteName = result.snarf_site.$.name;
-            const packages = result.snarf_site.package.map((p: any) => ({
-                label: p.$.name,
-                description: p.description[0],
-                url: p.entry[0].$.url,
+            const parser = new XMLParser({ 
+                ignoreAttributes: false, 
+                isArray: (_, __, ___, isAttribute) => !isAttribute 
+            });
+            const result = parser.parse(content);
+            const snarfSite = result['snarf_site'][0];
+            const siteName = snarfSite['@_name'];
+            const packages = snarfSite['package'].map((p: any) => ({
+                label: p['@_name'],
+                description: p['description'][0],
+                url: p['entry'][0]['@_url'],
+                category: p['@_category'] || 'Uncategorized',
             }));
             return { label: siteName, packages };
         } catch (error) {
@@ -91,13 +98,23 @@ export class AssignmentProvider implements vscode.TreeDataProvider<AssignmentTre
 
         const { label, packages } = await this.fetchSite(downloadURL);
 
-        const assignmentItems = packages.map(pkg =>
-            new AssignmentTreeItem(pkg.label, vscode.TreeItemCollapsibleState.None, undefined, undefined, pkg)
-        );
+        const categories: { [key: string]: AssignmentItemData[] } = {};
+        for (const pkg of packages) {
+            if (!categories[pkg.category]) {
+                categories[pkg.category] = [];
+            }
+            categories[pkg.category].push(pkg);
+        }
 
-        assignmentItems.sort((a, b) => (a.label! as string).localeCompare(b.label! as string));
+        const categoryItems = Object.keys(categories).sort().map(category => {
+            const assignmentItems = categories[category].map(pkg =>
+                new AssignmentTreeItem(pkg.label, vscode.TreeItemCollapsibleState.None, undefined, undefined, pkg)
+            );
+            assignmentItems.sort((a, b) => (a.label! as string).localeCompare(b.label! as string));
+            return new AssignmentTreeItem(category, vscode.TreeItemCollapsibleState.Expanded, 'folder', assignmentItems);
+        });
 
-        const rootItem = new AssignmentTreeItem(label, vscode.TreeItemCollapsibleState.Expanded, 'project', assignmentItems);
+        const rootItem = new AssignmentTreeItem(label, vscode.TreeItemCollapsibleState.Expanded, 'project', categoryItems);
         return [rootItem];
     }
 }
@@ -114,18 +131,17 @@ async function downloadAndUnzip(itemData: AssignmentItemData, context: vscode.Ex
 
     try {
         await vscode.workspace.fs.stat(projectUri);
-        const choice = await vscode.window.showInformationMessage(
+        const choice = await vscode.window.showWarningMessage(
             `Project "${baseProjectName}" already exists. Create a new copy?`,
-            { modal: true },
-            'Yes',
-            'No'
+            "Yes",
+            "No"
         );
 
         if (choice === 'Yes') {
             let n = 1;
             let finalProjectName;
             while (true) {
-                finalProjectName = `_copy_${baseProjectName}_${n}`;
+                finalProjectName = `copy_${baseProjectName}_${n}`;
                 projectUri = vscode.Uri.joinPath(vscode.Uri.file(itsc2214Dir), finalProjectName);
                 try {
                     await vscode.workspace.fs.stat(projectUri);

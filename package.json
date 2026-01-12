@@ -2,7 +2,7 @@
   "name": "itsc2214",
   "displayName": "ITSC 2214",
   "description": "An extension for UNCC ITSC2214",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "publisher": "MichaelSpitz",
   "engines": {
     "vscode": "^1.85.0"
@@ -98,7 +98,7 @@
         "itsc2214.downloadURL": {
           "type": "string",
           "default": "https://webpages.charlotte.edu/mperez19/itsc2214/2025Fall/snarf.xml",
-          "description": "The URL to the snarf file listing available assignments."
+          "description": "The URL to the snarf.xml file listing available assignments."
         },
         "itsc2214.uploadURL": {
           "type": "string",
@@ -171,7 +171,6 @@
     "@types/node-fetch": "^2.6.11",
     "@types/unzip-stream": "^0.3.3",
     "@types/vscode": "^1.85.0",
-    "@types/xml2js": "^0.4.14",
     "@types/archiver": "^5.3.1",
     "typescript": "^5.4.5",
     "@types/form-data": "^2.5.0",
@@ -180,7 +179,6 @@
   "dependencies": {
     "node-fetch": "^2.7.0",
     "unzip-stream": "^0.3.1",
-    "xml2js": "^0.6.2",
     "archiver": "^5.3.1",
     "fast-xml-parser": "^4.3.6",
     "glob": "^10.3.10",
