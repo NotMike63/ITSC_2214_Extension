@@ -61,8 +61,10 @@ export async function setupDirectory(context: vscode.ExtensionContext) {
         }
     }
 
-    if (!baseUri) return;
-
+    if (!baseUri) {
+        console.error('Failed to select a setup dir');
+        return;
+    }
     try {
         await vscode.workspace.fs.stat(baseUri);
         window.showWarningMessage(`A folder named "itsc2214" already exists in the selected location. It will be used as the project directory.`);
@@ -207,11 +209,11 @@ export async function createJavaProject(context: vscode.ExtensionContext) {
 }
 
 export async function copyJarsFromExtension(targetBaseUri: vscode.Uri, destinationFolderName: string, context: vscode.ExtensionContext): Promise<{ success: boolean; jarsCopied: number }> {
-    const extensionJarsUri = vscode.Uri.joinPath(context.extensionUri, 'JARS');
-    const targetJarsUri = vscode.Uri.joinPath(targetBaseUri, destinationFolderName);
+    const extensionJarsUri = vscode.Uri.joinPath(context.extensionUri, 'JARS'); // finds save_path/JARS
+    const targetJarsUri = vscode.Uri.joinPath(targetBaseUri, destinationFolderName); 
     let jarsCopiedCount = 0;
 
-    await vscode.workspace.fs.createDirectory(targetJarsUri);
+    await vscode.workspace.fs.createDirectory(targetJarsUri); // in case of missing JARS dir in target => create dir
 
     try {
         const jarFiles = await vscode.workspace.fs.readDirectory(extensionJarsUri);
