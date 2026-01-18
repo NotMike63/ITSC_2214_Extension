@@ -1,6 +1,5 @@
 import * as archiver from "archiver";
 import { XMLParser } from "fast-xml-parser";
-import fetch from "node-fetch";
 import * as fs from "fs";
 import * as path from "path";
 import * as streamBuffers from "stream-buffers";
@@ -8,7 +7,6 @@ import { commands, ExtensionContext, InputBoxOptions, window, workspace } from "
 import * as vscode from 'vscode';
 import { AsyncItem, AsyncTreeDataProvider } from "./asyncTree";
 import { delay, getConfig } from "./utils";
-import FormData = require("form-data");
 
 
 type TransportParam = { name: string; value: string };
@@ -167,7 +165,7 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
         if (!workspaceRoot) {
             return window.showErrorMessage("No workspace folder open.");
         }
-
+        // Submit only the 'submit' folder
         const submitUri = vscode.Uri.joinPath(workspaceRoot, 'submit');
         
         try {
@@ -225,9 +223,11 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
         });
   
         await archive.finalize();
-        body.append(param.name, output.getContents(), {
-          filename: formatVars(param.value),
-        });
+        const zipBuffer = output.getContents();
+        if (zipBuffer) {
+          const arrayBuffer = zipBuffer.buffer.slice(zipBuffer.byteOffset, zipBuffer.byteOffset + zipBuffer.byteLength) as ArrayBuffer;
+          body.append(param.name, new Blob([arrayBuffer]), formatVars(param.value));
+        }
       }
   
       const resp = await fetch(assignment.transport.uri, {

@@ -62,7 +62,7 @@ export async function setupDirectory(context: vscode.ExtensionContext) {
     }
 
     if (!baseUri) {
-        console.error('Failed to select a setup dir');
+        console.error('Failed to select a setup dir'); // line and curlys could be causing error
         return;
     }
     try {
