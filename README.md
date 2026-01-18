@@ -14,7 +14,7 @@ A Visual Studio Code extension for creating ITSC 2214 projects, downloading & su
 Only intended for use with ITSC2214_<SeasonYY>.code-profile
 DO NOT DOWNLOAD THIS EXTENSION DIRECTLY, for proper installation see as follows:
 
-1. Download ITSC2214_Fall25.code-profile from Canvas.
+1. Download ITSC2214.code-profile from Canvas.
 2. Import the profile and select create.
 3. Wait for all extensions to download and install.
 4. (Students)   - Select desktop as itsc2214 dir location.

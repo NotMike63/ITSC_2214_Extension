@@ -7,3 +7,5 @@ node_modules
 ./.vscode
 .vscode-test.mjs
 src/test
+.DS_Store
+.vscode
