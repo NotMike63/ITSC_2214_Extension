@@ -2,7 +2,7 @@
   "name": "itsc2214",
   "displayName": "ITSC 2214",
   "description": "An extension for UNCC ITSC2214",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "publisher": "MichaelSpitz",
   "engines": {
     "vscode": "^1.85.0"
@@ -166,23 +166,22 @@
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@types/archiver": "^5.3.1",
+    "@types/form-data": "^2.5.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.12.12",
     "@types/node-fetch": "^2.6.11",
+    "@types/stream-buffers": "^3.0.7",
     "@types/unzip-stream": "^0.3.3",
     "@types/vscode": "^1.85.0",
-    "@types/archiver": "^5.3.1",
-    "typescript": "^5.4.5",
-    "@types/form-data": "^2.5.0",
-    "@types/stream-buffers": "^3.0.7"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
-    "node-fetch": "^2.7.0",
-    "unzip-stream": "^0.3.1",
     "archiver": "^5.3.1",
     "fast-xml-parser": "^4.3.6",
-    "glob": "^10.3.10",
     "form-data": "^4.0.0",
-    "stream-buffers": "^3.0.2"
+    "node-fetch": "^2.7.0",
+    "stream-buffers": "^3.0.2",
+    "unzip-stream": "^0.3.1"
   }
 }
