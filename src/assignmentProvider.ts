@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { Readable } from 'stream';
 import * as unzip from 'unzip-stream';
 import { XMLParser } from 'fast-xml-parser';
 import { copyJarsToDir } from './projectCreator';
@@ -171,8 +172,13 @@ async function downloadAndUnzip(itemData: AssignmentItemData, context: vscode.Ex
     const tempDirUri = vscode.Uri.file(fs.mkdtempSync(path.join(os.tmpdir(), 'itsc2214-unzip-')));
 
     return new Promise<vscode.Uri | undefined>((resolve, reject) => {
+        if (!resp.body) {
+            reject(new Error('Response body is empty'));
+            return;
+        }
         const extractStream = unzip.Extract({ path: tempDirUri.fsPath });
-        resp.body.pipe(extractStream);
+        const nodeStream = Readable.fromWeb(resp.body as import('stream/web').ReadableStream);
+        nodeStream.pipe(extractStream);
         extractStream.on('error', reject);
         extractStream.on('finish', async () => {
             try {
