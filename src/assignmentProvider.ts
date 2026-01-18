@@ -199,7 +199,21 @@ async function downloadAndUnzip(itemData: AssignmentItemData, context: vscode.Ex
 
                 await vscode.workspace.fs.delete(tempDirUri, { recursive: true });
 
-                await copyJarsToDir(projectUri, 'lib', context);
+                // Only copy global JARs if the downloaded project doesn't have any
+                const libUri = vscode.Uri.joinPath(projectUri, 'lib');
+                let hasJars = false;
+                try {
+                    const libEntries = await vscode.workspace.fs.readDirectory(libUri);
+                    hasJars = libEntries.some(([name, type]) => 
+                        type === vscode.FileType.File && name.endsWith('.jar')
+                    );
+                } catch {
+                    // lib folder doesn't exist
+                }
+
+                if (!hasJars) {
+                    await copyJarsToDir(projectUri, 'lib', context);
+                }
 
                 resolve(projectUri);
             } catch (e) {
