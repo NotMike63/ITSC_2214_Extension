@@ -17,6 +17,8 @@ DO NOT DOWNLOAD THIS EXTENSION DIRECTLY, for proper installation see as follows:
 1. Download ITSC2214_Fall25.code-profile from Canvas.
 2. Import the profile and select create.
 3. Wait for all extensions to download and install.
+4. (Students)   - Select desktop as itsc2214 dir location.
+   (Professors) - If using for multiple semesters select a custom location for the dir(current semester itsc2214 dir).
 
 ## Contributing
 
