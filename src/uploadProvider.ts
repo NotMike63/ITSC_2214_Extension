@@ -1,7 +1,7 @@
 import * as archiver from "archiver";
 import { XMLParser } from "fast-xml-parser";
-import { glob } from "glob";
 import fetch from "node-fetch";
+import * as fs from "fs";
 import * as path from "path";
 import * as streamBuffers from "stream-buffers";
 import { commands, ExtensionContext, InputBoxOptions, window, workspace } from "vscode";
@@ -123,6 +123,7 @@ export class UploadDataProvider extends AsyncTreeDataProvider {
   }
 }
 
+// User sign-in for Web-CAT
 const PROMPT_ON: { [key: string]: InputBoxOptions } = {
   "${user}": { prompt: "Web-CAT Username" },
   "${pw}": { prompt: "Web-CAT Password", password: true },
@@ -163,44 +164,19 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
       const workspaceRoot = workspace.workspaceFolders?.[0]?.uri;
 
       for (const param of assignment.transport.fileParams) {
-        let submissionUri: vscode.Uri | undefined;
-        if (workspaceRoot) {
-            const submitUri = vscode.Uri.joinPath(workspaceRoot, 'submit');
-            const srcUri = vscode.Uri.joinPath(workspaceRoot, 'src');
-
-            try {
-                await workspace.fs.stat(submitUri);
-                submissionUri = submitUri;
-            } catch {
-                try {
-                    await workspace.fs.stat(srcUri);
-                    submissionUri = srcUri;
-                } catch {
-                    // Neither folder exists
-                }
-            }
+        if (!workspaceRoot) {
+            return window.showErrorMessage("No workspace folder open.");
         }
 
-        if (!submissionUri) {
-            const dirResult = await window.showOpenDialog({
-                title: "Select Submission Folder",
-                canSelectFiles: false,
-                canSelectFolders: true,
-                canSelectMany: false,
-                defaultUri: workspaceRoot,
-                openLabel: `Select Folder (${param.name})`,
-            });
-    
-            if (dirResult) {
-                submissionUri = dirResult[0];
-            }
+        const submitUri = vscode.Uri.joinPath(workspaceRoot, 'submit');
+        
+        try {
+            await workspace.fs.stat(submitUri);
+        } catch {
+            return window.showErrorMessage("No 'submit' folder found in workspace.");
         }
 
-        if (!submissionUri) {
-            return window.showInformationMessage("Operation canceled.");
-        }
-
-        files.push({ param, dir: submissionUri.fsPath });
+        files.push({ param, dir: submitUri.fsPath });
       }
   
       
@@ -231,18 +207,10 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
         const archive = archiver("zip");
         archive.pipe(output);
   
-        const paths = await glob("**/*", {
-          cwd: dir,
-          ignore: [
-            ...assignment.excludes.map((x) => x.pattern),
-            "*.gdoc",
-            "*.gslides",
-            "*.gsheet",
-            "*.gdraw",
-            "*.gtable",
-            "*.gform",
-          ],
-        });
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        const paths = entries
+          .filter(entry => entry.isFile())
+          .map(entry => entry.name);
   
         for (const file of paths) {
           archive.file(path.join(dir, file), { name: file });
