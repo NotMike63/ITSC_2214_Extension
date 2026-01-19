@@ -248,7 +248,15 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
             vscode.env.openExternal(vscode.Uri.parse(resultsUrl));
         }
       } else {
-        window.showErrorMessage("Could not find submission results URL. Please check the WebCAT website directly.");
+        // Check for specific error conditions in the response
+        // Use original html for exact matches, lowercase for keyword searches
+        if (html.includes('Your login attempt to Web-CAT failed.')) {
+          window.showErrorMessage("Invalid username or password. Please try again.");
+        } else if (html.toLowerCase().includes('deadline') || html.toLowerCase().includes('past due') || html.toLowerCase().includes('closed')) {
+          window.showErrorMessage("The submission deadline has passed or the assignment is closed.");
+        } else {
+          window.showErrorMessage("Could not find submission results URL. Please check the WebCAT website directly.");
+        }
       }
     };
   
