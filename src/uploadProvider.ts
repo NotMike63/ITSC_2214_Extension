@@ -8,6 +8,9 @@ import * as vscode from 'vscode';
 import { AsyncItem, AsyncTreeDataProvider } from "./asyncTree";
 import { delay, getConfig } from "./utils";
 
+// Output channel for WebCAT responses
+const outputChannel = vscode.window.createOutputChannel("WebCAT Response");
+
 
 type TransportParam = { name: string; value: string };
 type Transport = { uri: string; params: TransportParam[]; fileParams: TransportParam[] };
@@ -127,7 +130,7 @@ const PROMPT_ON: { [key: string]: InputBoxOptions } = {
   "${pw}": { prompt: "Web-CAT Password", password: true },
 };
 
-export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
+export const uploadItem = async (item: AsyncItem, context: ExtensionContext) => {
     const { assignment: _assignment, group: _group, provider } = <AssignmentItem>item.item;
   
     const action = async () => {
@@ -235,6 +238,12 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
         body,
       });
       const html = await resp.text();
+      
+      // Write to Output channel and show it
+      outputChannel.clear();
+      outputChannel.appendLine(html);
+      outputChannel.show();
+      
       const match = html.match(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"/);
       const resultsUrl = match ? match[1] : undefined;
       
@@ -252,6 +261,8 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
         // Use original html for exact matches, lowercase for keyword searches
         if (html.includes('Your login attempt to Web-CAT failed.')) {
           window.showErrorMessage("Invalid username or password. Please try again.");
+        } else if (html.includes('You are out of submission energy')) {
+          window.showErrorMessage("You are out of submission energy, view WebCat for requirements to recharge.")
         } else {
           window.showErrorMessage("Could not find submission results URL. Please check the WebCAT website directly.");
         }
@@ -259,7 +270,7 @@ export const uploadItem = (item: AsyncItem, context: ExtensionContext) => {
     };
   
     try {
-      window.withProgress({ location: { viewId: "uploadBrowser" }, title: "Uploading..." }, () =>
+      await window.withProgress({ location: { viewId: "uploadBrowser" }, title: "Uploading..." }, () =>
         Promise.all([delay(1000), action()])
       );
     } catch (err) {
