@@ -2,7 +2,7 @@
   "name": "itsc2214",
   "displayName": "ITSC 2214",
   "description": "An extension for UNCC ITSC2214",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "publisher": "MichaelSpitz",
   "engines": {
     "vscode": "^1.85.0"
