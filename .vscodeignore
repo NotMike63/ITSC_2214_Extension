@@ -13,7 +13,6 @@ vsc-extension-quickstart.md
 !JARS/
 Readme.md
 Changelog.md
-node_modules
 .idea
 .github
 **/out/test/*
