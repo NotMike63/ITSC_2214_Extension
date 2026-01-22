@@ -1,4 +1,4 @@
-import * as archiver from "archiver";
+import archiver from "archiver";
 import { XMLParser } from "fast-xml-parser";
 import * as fs from "fs";
 import * as path from "path";
