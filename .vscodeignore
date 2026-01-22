@@ -1,6 +1,8 @@
 .vscode/**
 .vscode-test/**
 src/**
+out/**
+node_modules/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
@@ -10,9 +12,10 @@ vsc-extension-quickstart.md
 **/*.ts
 **/.vscode-test.*
 # Don't ignore the JARS directory
-!JARS/
+!JARS/**
+# Don't ignore the bundled dist js file (but ignore sourcemaps)
+!dist/extension.js
 Readme.md
 Changelog.md
 .idea
 .github
-**/out/test/*
